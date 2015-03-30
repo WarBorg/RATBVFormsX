@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<TabbedPage xmlns="http://xamarin.com/schemas/2014/forms"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            x:Class="RATBVFormsX.Views.BusLinesView"
+            Title="Bus Lines">
+  <TabbedPage.Resources>
+    <ResourceDictionary>
+      <Style x:Key="NameLabelStyle" TargetType="Label">
+        <Setter Property="FontAttributes" Value="Bold"/>
+        <Setter Property="FontSize" Value="Large"/>
+          <!--<Setter.Value>
+            <OnPlatform x:TypeArguments="x:String"
+                        WinPhone="Large"
+                        Android="Medium"
+                        iOS="Large"/>
+          </Setter.Value>
+        </Setter>-->
+      </Style>
+      
+      <DataTemplate x:Key="BusLinesListViewDataTemplate">
+        <ViewCell>
+              <StackLayout Orientation="Vertical">
+                <StackLayout.Padding>
+                  <OnPlatform x:TypeArguments="Thickness"
+                              iOS="5,0,0,0"/>
+                </StackLayout.Padding>
+                <Label Style="{StaticResource NameLabelStyle}"
+                       Text="{Binding Name}"/>
+                <Label Text="{Binding Route}"/>
+              </StackLayout>
+            </ViewCell>
+      </DataTemplate>
+    </ResourceDictionary>
+  </TabbedPage.Resources>
+  
+  <TabbedPage.Children>
+    <ContentPage Title="Bus" Icon="Bus.png">
+      <ListView HasUnevenRows="True" IsPullToRefreshEnabled="True"
+                ItemsSource="{Binding BusLines}"
+                ItemSelected="BusLine_OnItemSelected"
+                ItemTemplate="{StaticResource BusLinesListViewDataTemplate}"
+                RefreshCommand="{Binding RefreshCommand}"
+                IsRefreshing="{Binding IsBusy, Mode=OneWay}">
+      </ListView>
+    </ContentPage>
+    <ContentPage Title="Midibus" Icon="MidiBus.png" >
+      <ListView HasUnevenRows="True" IsPullToRefreshEnabled="True"
+                ItemsSource="{Binding MidiBusLines}"
+                ItemSelected="BusLine_OnItemSelected"
+                ItemTemplate="{StaticResource BusLinesListViewDataTemplate}"
+                RefreshCommand="{Binding RefreshCommand}"
+                IsRefreshing="{Binding IsBusy, Mode=OneWay}">
+      </ListView>
+    </ContentPage>
+    <ContentPage Title="Trolleybus" Icon="TrolleyBus.png">
+      <ListView HasUnevenRows="True" IsPullToRefreshEnabled="True"
+                ItemsSource="{Binding TrolleybusLines}"
+                ItemSelected="BusLine_OnItemSelected"
+                ItemTemplate="{StaticResource BusLinesListViewDataTemplate}"
+                RefreshCommand="{Binding RefreshCommand}"
+                IsRefreshing="{Binding IsBusy, Mode=OneWay}">
+      </ListView>
+    </ContentPage>
+  </TabbedPage.Children>
+</TabbedPage>
