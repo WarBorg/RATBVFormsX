@@ -187,7 +187,7 @@ namespace RATBVFormsX.ViewModels
 
         private async Task GetBusStationsAsync(string linkDirection, string direction)
         {
-            if (!CheckInternetAvailability())
+            if (!IsInternetAvailable())
                 return;
 
             BusStations = await _busWebService.GetBusStationsAsync(linkDirection);
@@ -222,7 +222,7 @@ namespace RATBVFormsX.ViewModels
 
         private async Task DownloadAllStationsSchedualsAsync()
         {
-            if (!CheckInternetAvailability())
+            if (!IsInternetAvailable())
                 return;
 
             foreach (var busStation in BusStations)

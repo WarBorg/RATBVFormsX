@@ -77,10 +77,8 @@ namespace RATBVFormsX.ViewModels
             {
                 return new MvxCommand<BusLineModel>(busLine =>
                     {
-                        if (!CheckInternetAvailability())
-                            return;
-
-                        ShowViewModel<BusStationsViewModel>(new BusStationsViewModel.Navigation() { Id = busLine.Id }); 
+                        if (IsInternetAvailable())
+                            ShowViewModel<BusStationsViewModel>(new BusStationsViewModel.Navigation() { Id = busLine.Id }); 
                     });
             }
         }
@@ -141,7 +139,7 @@ namespace RATBVFormsX.ViewModels
 
         private async Task GetBusLinesAsync()
         {
-            if (!CheckInternetAvailability())
+            if (!IsInternetAvailable())
                 return;
 
             List<BusLineModel> busLines = await _busWebService.GetBusLinesAsync();
