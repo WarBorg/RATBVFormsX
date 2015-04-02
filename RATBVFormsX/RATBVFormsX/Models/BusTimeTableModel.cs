@@ -18,5 +18,6 @@ namespace RATBVFormsX.Models
         public string Hour { get; set; }
         public string Minutes { get; set; }
         public string TimeOfWeek { get; set; }
+        public string LastUpdateDate { get; set; }
     }
 }

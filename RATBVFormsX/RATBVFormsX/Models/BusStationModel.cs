@@ -18,6 +18,7 @@ namespace RATBVFormsX.Models
         public string Name { get; set; }
         public string Direction { get; set; }
         public string SchedualLink { get; set; }
+        public string LastUpdateDate { get; set; }
         
         [OneToMany]
         public List<BusTimeTableModel> BusTimeTables { get; set; }

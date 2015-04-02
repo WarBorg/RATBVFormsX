@@ -60,12 +60,12 @@ namespace RATBVFormsX.ViewModels
         {
             //_networkService.Subscribe(x => x.Status.)
             // this does not work when disconnecting the wifi, I need to subscribe to the event in order to recheck connectivity
-            /*if (!_networkService.IsMobile && !_networkService.IsWifi)
-            {
-                _dialogService.Toast("No Internet connection detected");
+            //if (!_networkService.IsMobile && !_networkService.IsWifi)
+            //{
+            //    _dialogService.Toast("No Internet connection detected");
 
-                return false;
-            }*/
+            //    return false;
+            //}
 
             return true;
         }

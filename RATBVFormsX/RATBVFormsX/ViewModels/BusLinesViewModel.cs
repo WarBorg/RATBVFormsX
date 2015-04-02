@@ -4,10 +4,12 @@ using Cirrious.MvvmCross.ViewModels;
 using RATBVFormsX.Constants;
 using RATBVFormsX.Models;
 using RATBVFormsX.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Xamarin.Forms;
 
 namespace RATBVFormsX.ViewModels
 {
@@ -20,7 +22,9 @@ namespace RATBVFormsX.ViewModels
         private List<BusLineModel> _midiBusLines;
         private List<BusLineModel> _trolleybusLines;
 
-        private bool isBusy;
+        private string _lastUpdated = "never";
+
+        private bool _isBusy;
 
         private MvxCommand _refreshCommand;
 
@@ -58,18 +62,42 @@ namespace RATBVFormsX.ViewModels
             }
         }
 
-        public bool IsBusy
+        public string Title
         {
-            get { return isBusy; }
+            get
+            {
+                if (Device.OS == TargetPlatform.WinPhone)
+                    return String.Format("Bus Lines - Updated on {0}", LastUpdated);
+
+                return "Bus Lines";
+            }
+        }
+
+        public string LastUpdated
+        {
+            get { return _lastUpdated; }
             set
             {
-                if (isBusy == value)
+                _lastUpdated = value;
+                RaisePropertyChanged(() => LastUpdated);
+                RaisePropertyChanged(() => Title);
+            }
+        }
+
+        public bool IsBusy
+        {
+            get { return _isBusy; }
+            set
+            {
+                if (_isBusy == value)
                     return;
 
-                isBusy = value;
+                _isBusy = value;
                 RaisePropertyChanged(() => IsBusy);
             }
         }
+
+        #region Commands
 
         public ICommand ShowSelectedBusLineStationsCommand
         {
@@ -91,6 +119,8 @@ namespace RATBVFormsX.ViewModels
                 return _refreshCommand;
             }
         }
+
+        #endregion Commands
 
         #endregion Properties
 
@@ -144,7 +174,9 @@ namespace RATBVFormsX.ViewModels
 
             List<BusLineModel> busLines = await _busWebService.GetBusLinesAsync();
 
-            SetBusLines(busLines);
+            GetBusLinesByType(busLines);
+
+            LastUpdated = String.Format("{0:d} {1:HH:mm}", DateTime.Now.Date, DateTime.Now);
 
             await AddBusLinesToDatabaseAsync(busLines);
         }
@@ -153,14 +185,16 @@ namespace RATBVFormsX.ViewModels
         {
             List<BusLineModel> busLines = _busDataService.GetBusLinesByName();
 
-            SetBusLines(busLines);
+            GetBusLinesByType(busLines);
+
+            LastUpdated = busLines.FirstOrDefault().LastUpdateDate;
         }
 
-        private void SetBusLines(List<BusLineModel> busLines)
+        private void GetBusLinesByType(List<BusLineModel> busLines)
         {
             BusLines = busLines.Where(bl => bl.Type == BusTypes.Bus).ToList();
             MidiBusLines = busLines.Where(bl => bl.Type == BusTypes.Midibus).ToList();
-            TrolleybusLines = busLines.Where(bl => bl.Type == BusTypes.Trolleybus).ToList();
+            TrolleybusLines = busLines.Where(bl => bl.Type == BusTypes.Trolleybus).Skip(5).ToList();
         }
 
         private async Task AddBusLinesToDatabaseAsync(List<BusLineModel> busLines)
@@ -172,7 +206,11 @@ namespace RATBVFormsX.ViewModels
                     _busDataService.CreateAllTables();
 
                     foreach (var busLine in busLines)
+                    {
+                        busLine.LastUpdateDate = LastUpdated;
+
                         _busDataService.InsertBusLine(busLine);
+                    }
                 });
         }
 

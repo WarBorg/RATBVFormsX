@@ -1,9 +1,13 @@
-﻿using RATBVFormsX.Constants;
+﻿using Cirrious.MvvmCross.ViewModels;
+using RATBVFormsX.Constants;
 using RATBVFormsX.Models;
 using RATBVFormsX.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using Xamarin.Forms;
 
 namespace RATBVFormsX.ViewModels
 {
@@ -17,6 +21,12 @@ namespace RATBVFormsX.ViewModels
         private List<BusTimeTableModel> _busTimeTableSaturday;
         private List<BusTimeTableModel> _busTimeTableSunday;
         private List<BusTimeTableModel> _busTimeTableHolidayWeekdays;
+
+        private string _lastUpdated = "never";
+
+        private bool _isBusy;
+
+        private MvxCommand _refreshCommand;
 
         #endregion Members
 
@@ -78,6 +88,54 @@ namespace RATBVFormsX.ViewModels
             }
         }
 
+        public string Title
+        {
+            get
+            {
+                if (Device.OS == TargetPlatform.WinPhone)
+                    return String.Format("{0} - Updated on {1}", BusLineAndStation, LastUpdated);
+
+                return BusLineAndStation;
+            }
+        }
+
+        public string LastUpdated
+        {
+            get { return _lastUpdated; }
+            set
+            {
+                _lastUpdated = value;
+                RaisePropertyChanged(() => LastUpdated);
+                RaisePropertyChanged(() => Title);
+            }
+        }
+
+        public bool IsBusy
+        {
+            get { return _isBusy; }
+            set
+            {
+                if (_isBusy == value)
+                    return;
+
+                _isBusy = value;
+                RaisePropertyChanged(() => IsBusy);
+            }
+        }
+
+        #region Commands
+
+        public ICommand RefreshCommand
+        {
+            get
+            {
+                _refreshCommand = _refreshCommand ?? new MvxCommand(DoRefreshCommand, () => { return !IsBusy; });
+                return _refreshCommand;
+            }
+        }
+
+        #endregion Commands
+
         #endregion Properties
 
         #region Constructors
@@ -91,6 +149,26 @@ namespace RATBVFormsX.ViewModels
         #endregion Constructors
 
         #region Methods
+
+        #region Commands
+
+        private async void DoRefreshCommand()
+        {
+            if (IsBusy)
+                return;
+
+            IsBusy = true;
+            _refreshCommand.RaiseCanExecuteChanged();
+
+            await GetBusTimeTableAsync(BusStation.SchedualLink);
+
+            IsBusy = false;
+            _refreshCommand.RaiseCanExecuteChanged();
+        }
+
+        #endregion Commands
+
+        #region Navigation
 
         public class Navigation
         {
@@ -107,11 +185,15 @@ namespace RATBVFormsX.ViewModels
                 GetBusTimeTable();
         }
 
+        #endregion Navigation
+
         private async Task GetBusTimeTableAsync(string schedualLink)
         {
             List<BusTimeTableModel> busTimetable = await _busWebService.GetBusTimeTableAsync(schedualLink);
 
-            SetTimeTable(busTimetable);
+            GetTimeTableByTimeOfWeek(busTimetable);
+
+            LastUpdated = String.Format("{0:d} {1:HH:mm}", DateTime.Now.Date, DateTime.Now);
 
             await AddBusStationsToDatabaseAsync(busTimetable);
         }
@@ -120,10 +202,12 @@ namespace RATBVFormsX.ViewModels
         {
             List<BusTimeTableModel> busTimetable = _busDataService.GetBusTimeTableByBusStation(BusStation);
 
-            SetTimeTable(busTimetable);
+            LastUpdated = busTimetable.FirstOrDefault().LastUpdateDate;
+
+            GetTimeTableByTimeOfWeek(busTimetable);
         }
 
-        private void SetTimeTable(List<BusTimeTableModel> butTimetable)
+        private void GetTimeTableByTimeOfWeek(List<BusTimeTableModel> butTimetable)
         {
             BusTimeTableWeekdays = butTimetable.Where(btt => btt.TimeOfWeek == TimeOfTheWeek.WeekDays).ToList();
             BusTimeTableSaturday = butTimetable.Where(btt => btt.TimeOfWeek == TimeOfTheWeek.Saturday).ToList();
@@ -138,6 +222,7 @@ namespace RATBVFormsX.ViewModels
                 {
                     // Add foreign key before inserting in database
                     busTimetableHour.BusStationId = BusStation.Id;
+                    busTimetableHour.LastUpdateDate = LastUpdated;
 
                     _busDataService.InsertBusTimeTable(busTimetableHour);
                 }

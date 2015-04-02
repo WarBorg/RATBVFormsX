@@ -2,25 +2,42 @@
 <TabbedPage xmlns="http://xamarin.com/schemas/2014/forms"
             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
             x:Class="RATBVFormsX.Views.BusStationsView"
-            Title="Bus Stations">
+            Title="{Binding Title}">
   <TabbedPage.Children>
     <ContentPage Title="{Binding BusLineName}">
-      <ListView ItemsSource="{Binding BusStations}"
-                ItemSelected="BusStation_OnItemSelected">
-        <ListView.ItemTemplate>
-          <DataTemplate>
-            <ViewCell>
-              <StackLayout Orientation="Vertical">
-                <Label FontAttributes="Bold" HorizontalOptions="FillAndExpand"
-                       Text="{Binding Name}"/>
-              </StackLayout>
-            </ViewCell>
-          </DataTemplate>
-        </ListView.ItemTemplate>
-      </ListView>
+      <StackLayout Orientation="Vertical">
+        <StackLayout Padding="0,5,10,0" HeightRequest="25">
+          <StackLayout.IsVisible>
+            <OnPlatform x:TypeArguments="x:Boolean"
+                        WinPhone="False"/>
+          </StackLayout.IsVisible>
+          <Label FontSize="Medium" HorizontalOptions="End"
+                 Text="{Binding LastUpdated, StringFormat='Updated on {0}'}" />
+        </StackLayout>
+        <ListView IsPullToRefreshEnabled="True"
+                  ItemsSource="{Binding BusStations}"
+                  ItemSelected="BusStation_OnItemSelected"
+                  RefreshCommand="{Binding RefreshCommand}"
+                  IsRefreshing="{Binding IsBusy, Mode=OneWay}">
+          <ListView.ItemTemplate>
+            <DataTemplate>
+              <ViewCell>
+                <StackLayout>
+                  <StackLayout.Padding>
+                    <OnPlatform x:TypeArguments="Thickness"
+                                iOS="5,0,0,0"/>
+                  </StackLayout.Padding>
+                  <Label FontSize="Medium" FontAttributes="Bold" VerticalOptions="CenterAndExpand" HorizontalOptions="Start"
+                         Text="{Binding Name}"/>
+                </StackLayout>
+              </ViewCell>
+            </DataTemplate>
+          </ListView.ItemTemplate>
+        </ListView>
+      </StackLayout>
       <ContentPage.ToolbarItems>
         <ToolbarItem Name="Tour" Order="Primary" Priority="0"
-                     Command="{Binding ReverseCommand}">>
+                     Command="{Binding ReverseCommand}">
           <ToolbarItem.Icon>
             <OnPlatform x:TypeArguments="FileImageSource"
                         WinPhone="Assets/reverse.png"

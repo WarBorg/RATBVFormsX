@@ -18,6 +18,7 @@ namespace RATBVFormsX.Models
         public string Color { get; set; }
         public string LinkNormalWay { get; set; }
         public string LinkReverseWay { get; set; }
+        public string LastUpdateDate { get; set; }
 
         [OneToMany]
         public List<BusStationModel> BusStations { get; set; }

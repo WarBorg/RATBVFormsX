@@ -2,9 +2,14 @@
 <TabbedPage xmlns="http://xamarin.com/schemas/2014/forms"
             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
             x:Class="RATBVFormsX.Views.BusTimeTableView"
-            Title="{Binding BusLineAndStation, StringFormat='Time Table - {0}'}">
+            Title="{Binding Title}">
   <TabbedPage.Resources>
     <ResourceDictionary>
+      <OnPlatform x:Key="LastUpdatedGridHeight" x:TypeArguments="GridLength"
+                  WinPhone="0"
+                  Android="25"
+                  iOS="25"/>
+      
       <Style x:Key="TitleLabelStyle" TargetType="Label">
         <Setter Property="FontAttributes" Value="Bold"/>
         <Setter Property="FontSize" Value="Medium"/>
@@ -15,13 +20,20 @@
         <Setter Property="FontSize" Value="Medium"/>
         <Setter Property="VerticalOptions" Value="Center"/>
       </Style>
+      <Style x:Key="LastUpdatedLabelStyle" TargetType="Label">
+        <Setter Property="FontSize" Value="Medium"/>
+        <Setter Property="HorizontalOptions" Value="End"/>
+      </Style>
+      <Style x:Key="LastUpdatedStackLayoutStyle" TargetType="StackLayout">
+        <Setter Property="Padding" Value="0,5,10,0"/>
+      </Style>
 
       <DataTemplate x:Key="BusTimeTableListViewDataTemplate">
         <ViewCell>
           <Grid>
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="2*"/>
-              <ColumnDefinition Width="8*" />
+              <ColumnDefinition Width="8*"/>
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" HorizontalOptions="Center"
                    Style="{StaticResource NormalLabelStyle}"
@@ -43,17 +55,25 @@
           <ColumnDefinition Width="8*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-          <RowDefinition Height="40"/>
+          <RowDefinition Height="{StaticResource LastUpdatedGridHeight}" />
+          <RowDefinition Height="30"/>
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Label Text="Hour" Grid.Column="0" 
+        <StackLayout Grid.ColumnSpan="2"
+                     Style="{StaticResource LastUpdatedStackLayoutStyle}">
+          <Label Style="{StaticResource LastUpdatedLabelStyle}"
+                 Text="{Binding LastUpdated, StringFormat='Last updated on {0}'}" />
+        </StackLayout>
+        <Label Text="Hour" Grid.Row="1"
                Style="{StaticResource TitleLabelStyle}"/>
-        <Label Text="Minutes" Grid.Column="1" 
+        <Label Text="Minutes" Grid.Row="1" Grid.Column="1" 
                Style="{StaticResource TitleLabelStyle}"/>
-        <ListView Grid.Row="1" Grid.ColumnSpan="2" VerticalOptions="Start"
+        <ListView Grid.Row="2" Grid.ColumnSpan="2" VerticalOptions="Start" IsPullToRefreshEnabled="True"
                   ItemsSource="{Binding BusTimeTableWeekdays}"
                   ItemSelected="BusTime_OnItemSelected"
-                  ItemTemplate="{StaticResource BusTimeTableListViewDataTemplate}">
+                  ItemTemplate="{StaticResource BusTimeTableListViewDataTemplate}"
+                  RefreshCommand="{Binding RefreshCommand}"
+                  IsRefreshing="{Binding IsBusy, Mode=OneWay}">
         </ListView>
       </Grid>
     </ContentPage>
@@ -64,12 +84,18 @@
           <ColumnDefinition Width="8*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+          <RowDefinition Height="{StaticResource LastUpdatedGridHeight}"/>
           <RowDefinition Height="40"/>
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Label Text="Hour" Grid.Column="0" Style="{StaticResource TitleLabelStyle}"/>
-        <Label Text="Minutes" Grid.Column="1" Style="{StaticResource TitleLabelStyle}"/>
-        <ListView Grid.Row="1" Grid.ColumnSpan="2" VerticalOptions="Start"
+        <Label Grid.ColumnSpan="2"
+               Style="{StaticResource LastUpdatedLabelStyle}"
+               Text="{Binding LastUpdated, StringFormat='Last updated on {0}'}" />
+        <Label Text="Hour" Grid.Row="1"
+               Style="{StaticResource TitleLabelStyle}"/>
+        <Label Text="Minutes" Grid.Row="1" Grid.Column="1" 
+               Style="{StaticResource TitleLabelStyle}"/>
+        <ListView Grid.Row="2" Grid.ColumnSpan="2" VerticalOptions="Start"
                   ItemsSource="{Binding BusTimeTableSaturday}"
                   ItemSelected="BusTime_OnItemSelected"
                   ItemTemplate="{StaticResource BusTimeTableListViewDataTemplate}">
@@ -83,12 +109,18 @@
           <ColumnDefinition Width="8*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+          <RowDefinition Height="{StaticResource LastUpdatedGridHeight}"/>
           <RowDefinition Height="40"/>
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Label Text="Hour" Grid.Column="0" Style="{StaticResource TitleLabelStyle}"/>
-        <Label Text="Minutes" Grid.Column="1" Style="{StaticResource TitleLabelStyle}"/>
-        <ListView Grid.Row="1" Grid.ColumnSpan="2" VerticalOptions="Start"
+        <Label Grid.ColumnSpan="2"
+               Style="{StaticResource LastUpdatedLabelStyle}"
+               Text="{Binding LastUpdated, StringFormat='Last updated on {0}'}" />
+        <Label Text="Hour" Grid.Row="1"
+               Style="{StaticResource TitleLabelStyle}"/>
+        <Label Text="Minutes" Grid.Row="1" Grid.Column="1" 
+               Style="{StaticResource TitleLabelStyle}"/>
+        <ListView Grid.Row="2" Grid.ColumnSpan="2" VerticalOptions="Start"
                   ItemsSource="{Binding BusTimeTableSunday}"
                   ItemSelected="BusTime_OnItemSelected"
                   ItemTemplate="{StaticResource BusTimeTableListViewDataTemplate}">

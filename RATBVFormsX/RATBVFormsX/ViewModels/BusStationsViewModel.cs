@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Xamarin.Forms;
 
 namespace RATBVFormsX.ViewModels
 {
@@ -23,6 +24,10 @@ namespace RATBVFormsX.ViewModels
 
         private BusLineModel _busLine;
         private List<BusStationModel> _busStations;
+
+        private string _lastUpdated = "never";
+
+        private bool _isBusy;
 
         private MvxCommand _reverseCommand;
         private MvxCommand _refreshCommand;
@@ -67,6 +72,41 @@ namespace RATBVFormsX.ViewModels
             }
         }
 
+        public string Title
+        {
+            get 
+            {
+                if (Device.OS == TargetPlatform.WinPhone)
+                    return String.Format("Bus Stations - Updated on {0}", LastUpdated);
+
+                return "Bus Stations";
+            }
+        }
+
+        public string LastUpdated
+        {
+            get { return _lastUpdated; }
+            set
+            {
+                _lastUpdated = value;
+                RaisePropertyChanged(() => LastUpdated);
+                RaisePropertyChanged(() => Title);
+            }
+        }
+
+        public bool IsBusy
+        {
+            get { return _isBusy; }
+            set
+            {
+                if (_isBusy == value)
+                    return;
+
+                _isBusy = value;
+                RaisePropertyChanged(() => IsBusy);
+            }
+        }
+
         #region Commands
 
         public ICommand ShowSelectedBusTimeTableCommand
@@ -86,21 +126,21 @@ namespace RATBVFormsX.ViewModels
             }
         }
 
-        public ICommand RefreshCommand
-        {
-            get
-            {
-                _refreshCommand = _refreshCommand ?? new MvxCommand(DoRefreshCommand);
-                return _refreshCommand;
-            }
-        }
-
         public ICommand DownloadCommand
         {
             get
             {
                 _downloadCommand = _downloadCommand ?? new MvxCommand(DoDownloadCommand);
                 return _downloadCommand;
+            }
+        }
+
+        public ICommand RefreshCommand
+        {
+            get
+            {
+                _refreshCommand = _refreshCommand ?? new MvxCommand(DoRefreshCommand, () => { return !IsBusy; });
+                return _refreshCommand;
             }
         }
 
@@ -131,13 +171,23 @@ namespace RATBVFormsX.ViewModels
 
         private async void DoRefreshCommand()
         {
-            //TODO check if internet connection
+            if (IsBusy)
+                return;
+
+            IsBusy = true;
+            _refreshCommand.RaiseCanExecuteChanged();
+
             await CheckBusStations(true);
+
+            IsBusy = false;
+            _refreshCommand.RaiseCanExecuteChanged();
         }
 
         private async void DoDownloadCommand()
         {
-            //TODO check if internet connection
+            if (!IsInternetAvailable())
+                return;
+
             await DownloadAllStationsSchedualsAsync();
 
             _dialogService.Toast("Download complete for all bus stations");
@@ -192,12 +242,17 @@ namespace RATBVFormsX.ViewModels
 
             BusStations = await _busWebService.GetBusStationsAsync(linkDirection);
 
+            LastUpdated = String.Format("{0:d} {1:HH:mm}", DateTime.Now.Date, DateTime.Now);
+
             await AddBusStationsToDatabaseAsync(direction);
         }
 
         private void GetBusStations()
         {
             BusStations = _busDataService.GetBusStationsByName(BusLine, Direction);
+            //BusStations.AddRange(BusStations);//test to make WP pull to refresh work when listview is small
+
+            LastUpdated = BusStations.FirstOrDefault().LastUpdateDate;
         }
 
         private async Task AddBusStationsToDatabaseAsync(string direction)
@@ -214,6 +269,7 @@ namespace RATBVFormsX.ViewModels
                     // Add foreign key and direction before inserting in database
                     busStation.BusLineId = BusLine.Id;
                     busStation.Direction = direction;
+                    busStation.LastUpdateDate = LastUpdated;
 
                     _busDataService.InsertBusStation(busStation);
                 }
@@ -225,6 +281,8 @@ namespace RATBVFormsX.ViewModels
             if (!IsInternetAvailable())
                 return;
 
+            var lastUpdatedTimeTable = String.Format("{0:d} {1:HH:mm}", DateTime.Now.Date, DateTime.Now);
+
             foreach (var busStation in BusStations)
             {
                 List<BusTimeTableModel> busTimetable = await _busWebService.GetBusTimeTableAsync(busStation.SchedualLink);
@@ -235,6 +293,7 @@ namespace RATBVFormsX.ViewModels
                     {
                         // Add foreign key before inserting in database
                         busTimetableHour.BusStationId = busStation.Id;
+                        busTimetableHour.LastUpdateDate = lastUpdatedTimeTable;
 
                         _busDataService.InsertBusTimeTable(busTimetableHour);
                     }
