@@ -25,7 +25,7 @@
         <Setter Property="HorizontalOptions" Value="End"/>
       </Style>
       <Style x:Key="LastUpdatedStackLayoutStyle" TargetType="StackLayout">
-        <Setter Property="Padding" Value="0,5,10,0"/>
+        <Setter Property="Padding" Value="0,5,5,0"/>
       </Style>
 
       <DataTemplate x:Key="BusTimeTableListViewDataTemplate">
@@ -62,7 +62,7 @@
         <StackLayout Grid.ColumnSpan="2"
                      Style="{StaticResource LastUpdatedStackLayoutStyle}">
           <Label Style="{StaticResource LastUpdatedLabelStyle}"
-                 Text="{Binding LastUpdated, StringFormat='Last updated on {0}'}" />
+                 Text="{Binding LastUpdated, StringFormat='Updated on {0}'}" />
         </StackLayout>
         <Label Text="Hour" Grid.Row="1"
                Style="{StaticResource TitleLabelStyle}"/>
@@ -85,12 +85,14 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
           <RowDefinition Height="{StaticResource LastUpdatedGridHeight}"/>
-          <RowDefinition Height="40"/>
+          <RowDefinition Height="30"/>
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Label Grid.ColumnSpan="2"
-               Style="{StaticResource LastUpdatedLabelStyle}"
-               Text="{Binding LastUpdated, StringFormat='Last updated on {0}'}" />
+        <StackLayout Grid.ColumnSpan="2"
+                     Style="{StaticResource LastUpdatedStackLayoutStyle}">
+          <Label Style="{StaticResource LastUpdatedLabelStyle}"
+                 Text="{Binding LastUpdated, StringFormat='Updated on {0}'}" />
+        </StackLayout>
         <Label Text="Hour" Grid.Row="1"
                Style="{StaticResource TitleLabelStyle}"/>
         <Label Text="Minutes" Grid.Row="1" Grid.Column="1" 
@@ -110,12 +112,14 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
           <RowDefinition Height="{StaticResource LastUpdatedGridHeight}"/>
-          <RowDefinition Height="40"/>
+          <RowDefinition Height="30"/>
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Label Grid.ColumnSpan="2"
-               Style="{StaticResource LastUpdatedLabelStyle}"
-               Text="{Binding LastUpdated, StringFormat='Last updated on {0}'}" />
+        <StackLayout Grid.ColumnSpan="2"
+                     Style="{StaticResource LastUpdatedStackLayoutStyle}">
+          <Label Style="{StaticResource LastUpdatedLabelStyle}"
+                 Text="{Binding LastUpdated, StringFormat='Updated on {0}'}" />
+        </StackLayout>
         <Label Text="Hour" Grid.Row="1"
                Style="{StaticResource TitleLabelStyle}"/>
         <Label Text="Minutes" Grid.Row="1" Grid.Column="1" 

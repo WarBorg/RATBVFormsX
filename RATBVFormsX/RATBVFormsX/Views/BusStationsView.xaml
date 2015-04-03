@@ -6,10 +6,12 @@
   <TabbedPage.Children>
     <ContentPage Title="{Binding BusLineName}">
       <StackLayout Orientation="Vertical">
-        <StackLayout Padding="0,5,10,0" HeightRequest="25">
+        <StackLayout Padding="0,5,5,0" HeightRequest="25">
           <StackLayout.IsVisible>
             <OnPlatform x:TypeArguments="x:Boolean"
-                        WinPhone="False"/>
+                        WinPhone="False"
+                        Android="True"
+                        iOS="True"/>
           </StackLayout.IsVisible>
           <Label FontSize="Medium" HorizontalOptions="End"
                  Text="{Binding LastUpdated, StringFormat='Updated on {0}'}" />
